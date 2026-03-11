@@ -393,11 +393,4 @@ Stockinger et al. Iterative ortholog mining enables data-driven discovery of ste
 
 ---
 
-# License
-
-MIT
-
-```
-
----
 
