@@ -1,4 +1,3 @@
-```markdown
 # HomoLogic
 
 **HomoLogic** is a modular Python workflow for **integrative enzyme homology analysis**.  
