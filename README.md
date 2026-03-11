@@ -317,7 +317,7 @@ This unified feature set enables **quantitative enzyme comparison and machine-le
 ---
 
 # Example Workflow 
-(please see detailed example at https://github.com/Buller-Lab/Ssal-KRED_orthologs)
+(please see detailed examples at https://github.com/Buller-Lab/Ssal-KRED_orthologs)
 
 ```python
 from homologic import HomoLogic
