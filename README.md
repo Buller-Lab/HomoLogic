@@ -383,6 +383,7 @@ Python libraries:
 * NumPy
 * Pandas
 
+For software versions, please anaconda .yml file
 ---
 
 # Citation
