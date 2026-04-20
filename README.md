@@ -2,7 +2,8 @@
 [![Python](https://img.shields.io/badge/python-3.14%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**HomoLogic** is a modular Python workflow for **integrative enzyme homology analysis**.  
+**HomoLogic** is a modular Python workflow for **integrative enzyme homology analysis**. 
+
 It combines **sequence similarity, structural comparison, binding-site analysis, and cavity characterization** into a unified computational pipeline designed for **enzyme discovery and comparative enzyme analysis**.
 
 The pipeline generates a comprehensive set of **sequence-, structure-, and binding-site–derived descriptors** that can be used for:
