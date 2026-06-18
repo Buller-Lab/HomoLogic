@@ -6,8 +6,7 @@
 
 It combines **sequence similarity, structural comparison, binding-site analysis, and cavity characterization** into a unified computational pipeline designed for **enzyme discovery and comparative enzyme analysis**.
 
-![Uploading image.png…]()
-
+<img width="4757" height="3217" alt="image" src="https://github.com/user-attachments/assets/3d708e70-0325-432d-9c5a-e07b45a3396a" />
 
 The pipeline generates a comprehensive set of **sequence-, structure-, and binding-site–derived descriptors** that can be used for:
 
