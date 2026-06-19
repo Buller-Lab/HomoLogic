@@ -1,6 +1,7 @@
 # HomoLogic
 [![Python](https://img.shields.io/badge/python-3.14%2B-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![DOI](https://zenodo.org/badge/1174208088.svg)](https://doi.org/10.5281/zenodo.20756173)
 
 **HomoLogic** is a modular Python workflow for **integrative enzyme homology analysis**. 
 
