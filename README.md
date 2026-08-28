@@ -34,6 +34,25 @@ The pipeline integrates:
 The result is a **unified descriptor table** that quantitatively characterizes enzyme homologs.
 
 ---
+# Installation
+
+Clone the repository and set up the conda environment using the provided `.yml` file:
+
+```bash
+git clone https://github.com/Buller-Lab/HomoLogic.git
+cd HomoLogic
+conda env create -f homologic.yml
+conda activate homologic
+```
+
+Once the environment is activated, HomoLogic is ready to use by importing directly from the cloned directory:
+
+```python
+from homologic import HomoLogic
+```
+
+---
+
 
 # Inputs
 
