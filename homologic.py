@@ -592,6 +592,7 @@ class HomoLogic:
             return ''.join(aa_mapping.get(str(r)[:3], '') for r in res_dict.values())
 
         def extract_metasequence(ref_pdb, tgt_pdb, max_dist):
+            max_dist_nm = max_dist / 10.0  
             ref = md.load(ref_pdb)
             tgt = md.load(tgt_pdb)
             tgt_res = {i:res for i,res in enumerate(tgt.topology.residues)}
@@ -603,7 +604,7 @@ class HomoLogic:
             dists = np.linalg.norm(ref_xyz[:,None] - tgt_xyz[None,:], axis=-1)
             closest = np.argmin(dists, axis=1)
             min_d = dists[np.arange(len(ref_ca_idx)), closest]
-            matched_tgt = {tgt.topology.atom(tgt_ca_idx[i]).residue for i,d in enumerate(min_d) if d < max_dist}
+            matched_tgt = {tgt.topology.atom(tgt_ca_idx[i]).residue for i,d in enumerate(min_d) if d < max_dist_nm}
             keep = [a.index for a in tgt.topology.atoms if a.residue in matched_tgt]
             tgt = tgt.atom_slice(keep)
             ref_res = {i:res for i,res in enumerate(ref.topology.residues)}
