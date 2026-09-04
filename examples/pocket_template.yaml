@@ -1,0 +1,16 @@
+# Example Boltz YAML template for `--format yaml --yaml-template`.
+# Chain A's sequence is replaced by each homolog in turn; everything else
+# here is carried through untouched. YAML is the only input format that can
+# express constraints, templates, modifications and affinity.
+version: 1
+sequences:
+  - protein:
+      id: A
+      sequence: PLACEHOLDER          # substituted per homolog
+  - ligand:
+      id: L
+      ccd: CA                        # calcium, by CCD code
+constraints:
+  - pocket:
+      binder: L
+      contacts: [[A, 20], [A, 24]]
