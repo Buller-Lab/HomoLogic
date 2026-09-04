@@ -2387,8 +2387,13 @@ class HomoLogic:
                 successful += 1
                 if i % 10 == 0 or i == len(pdb_files):
                     self.print_progress(f"Processed {i}/{len(pdb_files)}")
-            except Exception:
+            except Exception as e:
+                self.print_warning(f"Binding-site extraction failed for "
+                                   f"{os.path.basename(pdb_path)}: {type(e).__name__}: {e}")
                 continue
+        if successful < len(pdb_files):
+            self.print_warning(f"{len(pdb_files) - successful} of {len(pdb_files)} "
+                               f"structures yielded no binding site")
         self.print_success(f"Extracted {successful}/{len(pdb_files)} binding sites", start_time)
 
     def superpose_binding_sites(self, csv_file='05_structure_homology_results/structure_homology.csv',
@@ -2458,7 +2463,9 @@ class HomoLogic:
                 if not np.isnan(rmsd):
                     valid_rmsd += 1
                 cmd.delete("all")
-            except Exception:
+            except Exception as e:
+                self.print_warning(f"Binding-site superposition failed for {acc}: "
+                                   f"{type(e).__name__}: {e}")
                 df.at[idx, 'rmsd_bindingsite'] = np.nan
                 df.at[idx, 'n_aligned_residues'] = np.nan
                 df.at[idx, 'aligned_fraction'] = np.nan
@@ -2480,7 +2487,8 @@ class HomoLogic:
         Stage 9: for every homolog, derive a "metasequence" (the one-letter
         residues making up its refined binding site, spatially matched
         residue-for-residue to the reference binding site within
-        tolerated_misalignment Angstrom) and compute:
+        tolerated_misalignment Angstrom -- mdtraj's native nanometres are
+        converted, see extract_metasequence) and compute:
           - a binding-site sequence-identity score, normalised against the
             reference-vs-itself score,
           - full-model and binding-site-local pLDDT summary statistics,
@@ -2518,12 +2526,24 @@ class HomoLogic:
             orig_len = len(tgt_res)
             ref_ca_idx = [a.index for a in ref.topology.atoms if a.name == 'CA']
             tgt_ca_idx = [a.index for a in tgt.topology.atoms if a.name == 'CA']
-            ref_xyz = ref.xyz[0][ref_ca_idx]
-            tgt_xyz = tgt.xyz[0][tgt_ca_idx]
-            dists = np.linalg.norm(ref_xyz[:,None] - tgt_xyz[None,:], axis=-1)  # pairwise distance matrix
+            # mdtraj stores coordinates in NANOMETRES; every other distance in
+            # this pipeline (Bio.PDB binding-site cutoff, TM-align RMSD, PyMOL
+            # RMSD, pyKVFinder probe/volume, Open3D ICP) is in ANGSTROMS, and
+            # max_dist is documented as Angstrom. Convert here so the units
+            # match: without this, tolerated_misalignment=1.0 silently means
+            # 1 nm = 10 A, ten times looser than intended.
+            ref_xyz = ref.xyz[0][ref_ca_idx] * 10.0
+            tgt_xyz = tgt.xyz[0][tgt_ca_idx] * 10.0
+            dists = np.linalg.norm(ref_xyz[:,None] - tgt_xyz[None,:], axis=-1)  # pairwise, Angstrom
             closest = np.argmin(dists, axis=1)
             min_d = dists[np.arange(len(ref_ca_idx)), closest]
-            matched_tgt = {tgt.topology.atom(tgt_ca_idx[i]).residue for i,d in enumerate(min_d) if d < max_dist}
+            # Take the target residue that is actually CLOSEST to each
+            # reference CA -- closest[i], not i. Indexing tgt_ca_idx by the
+            # reference's own position matched residues by rank rather than
+            # proximity, and raised IndexError whenever the target site had
+            # fewer CA atoms than the reference.
+            matched_tgt = {tgt.topology.atom(tgt_ca_idx[closest[i]]).residue
+                           for i, d in enumerate(min_d) if d < max_dist}
             keep = [a.index for a in tgt.topology.atoms if a.residue in matched_tgt]
             tgt = tgt.atom_slice(keep)
             ref_res = {i:res for i,res in enumerate(ref.topology.residues)}
@@ -2587,6 +2607,7 @@ class HomoLogic:
         df['non_equivalent_residues'] = np.nan
 
         processed = 0
+        failed = []
         for idx, row in df.iterrows():
             tid = row.get('homolog_id', row.get('reference_id', 'n.d.'))
             if tid == 'n.d.':
@@ -2614,11 +2635,22 @@ class HomoLogic:
                 processed += 1
                 if processed % 10 == 0:
                     self.print_progress(f"Analyzed {processed} binding sites")
-            except Exception:
+            except Exception as e:
+                # Previously `except Exception: continue`, which dropped
+                # homologs with no message at all -- a crash here left the
+                # stage reporting success on a silently halved dataset.
+                failed.append(tid)
+                self.print_warning(f"Binding-site analysis failed for {tid}: "
+                                   f"{type(e).__name__}: {e}")
                 continue
 
         out_csv = os.path.join(bindingsite_similarity_results, 'bindingsite_homology.csv')
         df.to_csv(out_csv, index=False)
+        if failed:
+            self.print_warning(
+                f"{len(failed)} of {processed + len(failed)} binding sites failed and "
+                f"have no score: {', '.join(failed[:5])}"
+                f"{' ...' if len(failed) > 5 else ''}")
         self.print_success(f"Processed {processed} binding sites → {out_csv}", start_time)
         return df
 
@@ -2772,7 +2804,9 @@ class HomoLogic:
                 df.loc[ridx, 'cavity_rmsd'] = rmsd
                 df.loc[ridx, 'cavity_n_points'] = ncorr
                 processed += 1
-            except Exception:
+            except Exception as e:
+                self.print_warning(f"Cavity analysis failed for {acc}: "
+                                   f"{type(e).__name__}: {e}")
                 continue
 
         out_csv = os.path.join(output_results_folder, 'bindingsite_cavity_homology.csv')
